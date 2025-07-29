@@ -64,6 +64,7 @@ jobs:
         run: |
           az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
           PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles --name taskmanagment-vk --resource-group TaskManagmentWebApp --query '[0].publishingProfile' -o tsv)
+          echo "Publish Profile: $PUBLISH_PROFILE"
           echo "::set-output name=publishProfile::$PUBLISH_PROFILE"
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
