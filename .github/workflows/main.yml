@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Dot Net
         uses: actions/setup-dotnet@v4
         with:
@@ -56,25 +57,22 @@ jobs:
     if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Dot Net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x
+
       - name: Publish App
         run: dotnet publish ./TaskManagmentSystem/TaskManagmentSystem.csproj --configuration Release --output ./Publish
 
-      - name: Retrieve Publish Profile
-        id: retrieve-publish-profile
-        run: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles --name TaskManagment-vk --resource-group TaskManagmentWebApp --query '[0].publishingProfile' -o tsv)
-          echo "Publish Profile: $PUBLISH_PROFILE"
-          echo "PUB_PROFILE=$PUBLISH_PROFILE" >> $GITHUB_ENV
-
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy
         uses: azure/webapps-deploy@v2
         with:
           app-name: taskmanagment-vk
-          publish-profile: $PUB_PROFILE
           package: ./Publish
