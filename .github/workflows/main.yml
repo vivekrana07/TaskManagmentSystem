@@ -57,24 +57,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Publish App
-        run: dotnet publish ./TaskManagmentSystem/TaskManagmentSystem.csproj --tl:on --configuration Release --output ./Publish
+        run: dotnet publish ./TaskManagmentSystem/TaskManagmentSystem.csproj --configuration Release --output ./Publish
 
       - name: Retrieve Publish Profile
-            id: retrieve-publish-profile
-            run: |
-              az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-              PUBLISH_URL=$(az webapp deployment list-publishing-profiles --name taskmanagment-vk --resource-group TaskManagmentWebApp --query '[0].publishUrl' -o tsv)
-              echo "Publish URL: $PUBLISH_URL"
-              echo "::set-output name=publishUrl::$PUBLISH_URL"
-            env:
-              AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-              AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-              AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-              ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUB_ID }}
+        id: retrieve-publish-profile
+        run: |
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+          PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles --name taskmanagment-vk --resource-group TaskManagmentWebApp --query '[0].publishingProfile' -o tsv)
+          echo "Publish Profile: $PUBLISH_PROFILE"
+          echo "::set-output name=publishProfile::$PUBLISH_PROFILE"
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
       - name: Deploy
         uses: azure/webapps-deploy@v2
         with:
           app-name: taskmanagment-vk
-          publish-profile: ${{ steps.retrieve-publish-profile.outputs.publishUrl }}
+          publish-profile: ${{ steps.retrieve-publish-profile.outputs.publishProfile }}
           package: ./Publish
