@@ -63,9 +63,10 @@ jobs:
         id: retrieve-publish-profile
         run: |
           az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles --name taskmanagment-vk --resource-group TaskManagmentWebApp --query '[0].publishingProfile' -o tsv)
+          PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles --name TaskManagment-vk --resource-group TaskManagmentWebApp --query '[0].publishingProfile' -o tsv)
           echo "Publish Profile: $PUBLISH_PROFILE"
-          echo "::set-output name=publishProfile::$PUBLISH_PROFILE"
+          echo "PUB_PROFILE=$PUBLISH_PROFILE" >> $GITHUB_ENV
+
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -75,5 +76,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: taskmanagment-vk
-          publish-profile: ${{ steps.retrieve-publish-profile.outputs.publishProfile }}
+          publish-profile: $PUB_PROFILE
           package: ./Publish
