@@ -60,15 +60,17 @@ jobs:
         run: dotnet publish ./TaskManagmentSystem/TaskManagmentSystem.csproj --tl:on --configuration Release --output ./Publish
 
       - name: Retrieve Publish Profile
-        id: retrieve-publish-profile
-        run: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          echo "::set-output name=publishUrl::$(az webapp deployment list-publishing-profiles --name taskmanagment-vk --resource-group TaskManagmentWebApp --query '[0].publishUrl' -o tsv)"
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUB_ID }}
+            id: retrieve-publish-profile
+            run: |
+              az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+              PUBLISH_URL=$(az webapp deployment list-publishing-profiles --name taskmanagment-vk --resource-group TaskManagmentWebApp --query '[0].publishUrl' -o tsv)
+              echo "Publish URL: $PUBLISH_URL"
+              echo "::set-output name=publishUrl::$PUBLISH_URL"
+            env:
+              AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+              AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+              AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+              ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUB_ID }}
 
       - name: Deploy
         uses: azure/webapps-deploy@v2
